@@ -1,14 +1,27 @@
 import socket
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print("Socket: {}".format(s))
 
-server = "www.google.co.uk"
-port = 80
-request = "GET / HTTP/1.1\nHost: {}\n\n".format(server)
+server = "127.0.0.1"  # only 127.0.0.1 while server.py running on same machine
+port = 3000
 
 s.connect((server, port))
-s.send(request.encode())
+print("Connection established")
 
-result = s.recv(4096)
-print("Response: {}".format(result.decode()))
+'''
+response = s.recv(1024)
+result = response
+while len(response) > 0:
+    response = s.recv(1024)  # does not return at end of data receiving if data isn't 1024 bytes? Something isn't right
+    result += response
+'''
+
+while True:
+    data = s.recv(2048)
+    print(data.decode("utf-8"))
+    reply = input('Client: ')
+    if not data:
+        break
+    s.sendall(str.encode(reply))
+
+print("Connection lost")
