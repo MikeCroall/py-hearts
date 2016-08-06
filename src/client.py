@@ -16,10 +16,12 @@ while len(response) > 0:
     result += response
 '''
 
+# todo send thread and receive thread
+
 while True:
     data = s.recv(2048)
     print(data.decode("utf-8"))
-    reply = input('Client: ')
+    reply = input('Me: ')
     if not data:
         break
     s.sendall(str.encode(reply))
