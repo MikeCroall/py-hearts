@@ -1,14 +1,39 @@
 import socket
+from _thread import *
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+keep_alive = True
 
-server = "127.0.0.1"  # only 127.0.0.1 while server.py running on same machine
+server = "127.0.0.1"  # for testing - only 127.0.0.1 while server.py running on same machine
 port = 3000
 
 s.connect((server, port))
 print("Connection established")
 
-'''
+
+def receive_loop():
+    while keep_alive:
+        data = s.recv(1024)
+        if not data:
+            continue  # if no data actually received
+        print(data.decode("utf-8"))
+
+
+def send_loop():
+    while keep_alive:
+        data = input('')
+        if not data:
+            continue  # if hit enter without any actual input
+        s.sendall(data.encode())
+
+
+start_new_thread(receive_loop, ())
+start_new_thread(send_loop, ())
+
+while keep_alive:
+    continue
+
+''' buffered receiving larger than specified buffer
 response = s.recv(1024)
 result = response
 while len(response) > 0:
@@ -16,8 +41,8 @@ while len(response) > 0:
     result += response
 '''
 
-# todo send thread and receive thread
 
+''' original main loop
 while True:
     data = s.recv(2048)
     print(data.decode("utf-8"))
@@ -25,5 +50,4 @@ while True:
     if not data:
         break
     s.sendall(str.encode(reply))
-
-print("Connection lost")
+'''

@@ -19,7 +19,7 @@ print("Waiting for a connection on port {}".format(3000))
 
 
 def threaded_client_handler(conn, username):
-    conn.send("Hello, and welcome to Hearts!\n".encode())
+    conn.sendall("Hello, and welcome to Hearts!\n".encode())
     while True:
         data = conn.recv(2048)
         if not data:
