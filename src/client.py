@@ -8,7 +8,7 @@ server = "127.0.0.1"  # for testing - only 127.0.0.1 while server.py running on 
 port = 3000
 
 s.connect((server, port))
-print("Connection established")
+print("Connection established\n")
 
 
 def receive_loop():
@@ -16,12 +16,12 @@ def receive_loop():
         data = s.recv(1024)
         if not data:
             continue  # if no data actually received
-        print(data.decode("utf-8"))
+        print(chr(27) + "[2A" + data.decode("utf-8") + "\033[K" + "\n")  # special strings go to line above (avoid messing with input looks) and clear to end of line
 
 
 def send_loop():
     while keep_alive:
-        data = input('')
+        data = input('Me: ')
         if not data:
             continue  # if hit enter without any actual input
         s.sendall(data.encode())
@@ -29,25 +29,10 @@ def send_loop():
 
 start_new_thread(receive_loop, ())
 start_new_thread(send_loop, ())
-
-while keep_alive:
-    continue
-
-''' buffered receiving larger than specified buffer
-response = s.recv(1024)
-result = response
-while len(response) > 0:
-    response = s.recv(1024)  # does not return at end of data receiving if data isn't 1024 bytes? Something isn't right
-    result += response
-'''
-
-
-''' original main loop
-while True:
-    data = s.recv(2048)
-    print(data.decode("utf-8"))
-    reply = input('Me: ')
-    if not data:
-        break
-    s.sendall(str.encode(reply))
-'''
+try:
+    while keep_alive:  # todo can just use main loop for either send or receive loop? No need for the extra thread
+        continue
+except KeyboardInterrupt as user_cancelled:
+    print("\rDisconnecting...")
+except:
+    raise

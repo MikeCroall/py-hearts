@@ -16,7 +16,7 @@ except socket.error as ex:
 
 s.listen(4)
 
-print("Waiting for a connection on port {}".format(3000))
+print("Waiting for a connection on port {}".format(port))
 
 
 def threaded_client_handler(player):
@@ -25,8 +25,10 @@ def threaded_client_handler(player):
         message = player.said()
         if not message:
             break
+        print(player.name + ": " + message)
         broadcast_except_player(player.name + ": " + message, player)
     conn.close()
+    print("{} disconnected".format(player.name))
 
 
 def broadcast(message):
@@ -41,13 +43,19 @@ def broadcast_except_player(message, not_this_player):
 
 
 while True:
-    conn, addr = s.accept()
-    name = "user_{}".format(len(players) + 1)
+    try:
+        conn, addr = s.accept()
+        name = "user_{}".format(len(players) + 1)
 
-    print("Connected to {}:{}, as {}".format(addr[0], addr[1], name))
-    broadcast("{} has joined".format(name))
+        print("Connected to {}:{}, as {}".format(addr[0], addr[1], name))
+        broadcast("{} has joined".format(name))
 
-    p = Player(name, conn)
-    players.append(p)
+        p = Player(name, conn)
+        players.append(p)
 
-    start_new_thread(threaded_client_handler, (p,))
+        start_new_thread(threaded_client_handler, (p,))
+    except KeyboardInterrupt as user_cancelled:
+        print("\rExiting...")
+        break
+    except:
+        raise
