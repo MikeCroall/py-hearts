@@ -14,13 +14,13 @@ try:
 except socket.error as ex:
     print(str(ex))
 
-s.listen(4)
+s.listen(5)
 
 print("Waiting for a connection on port {}".format(port))
 
 
 def threaded_client_handler(player):
-    conn.sendall("Hello, and welcome to Hearts!\n".encode())
+    conn.sendall("You have successfully connected to the hearts server @ {}!\n".format(socket.gethostname()).encode())
     while True:
         message = player.said()
         if not message:
@@ -54,8 +54,12 @@ while True:
         players.append(p)
 
         start_new_thread(threaded_client_handler, (p,))
+
     except KeyboardInterrupt as user_cancelled:
         print("\rExiting...")
         break
+
     except:
         raise
+
+s.close()
