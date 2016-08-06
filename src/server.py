@@ -1,5 +1,6 @@
 import socket
 from _thread import *
+from player import Player
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -18,37 +19,35 @@ s.listen(4)
 print("Waiting for a connection on port {}".format(3000))
 
 
-def threaded_client_handler(conn, username):
+def threaded_client_handler(player):
     conn.sendall("Hello, and welcome to Hearts!\n".encode())
     while True:
-        data = conn.recv(2048)
-        if not data:
+        message = player.said()
+        if not message:
             break
-        # broadcast to everyone else who said what
-        broadcast_except_player(username + ": " + data.decode("utf-8"), conn)
-
-        # below simply echos back to that player
-        #reply = "Server: " + data.decode("utf-8")
-        #conn.sendall(reply.encode())
-
+        broadcast_except_player(player.name + ": " + message, player)
     conn.close()
 
 
 def broadcast(message):
-    for name, conn in players:
-        conn.sendall(message.encode())
+    for player in players:
+        player.tell(message)
 
 
-def broadcast_except_player(message, player_conn):
-    for name, conn in players:
-        if conn != player_conn:
-            conn.sendall(message.encode())
+def broadcast_except_player(message, not_this_player):
+    for player in players:
+        if player != not_this_player:
+            player.tell(message)
 
 
 while True:
     conn, addr = s.accept()
-    username = "user_{}".format(len(players) + 1)
+    name = "user_{}".format(len(players) + 1)
 
-    print("Connected to {}:{}, as {}".format(addr[0], addr[1], username))
-    players.append((username, conn))
-    start_new_thread(threaded_client_handler, (conn,username,))
+    print("Connected to {}:{}, as {}".format(addr[0], addr[1], name))
+    broadcast("{} has joined".format(name))
+
+    p = Player(name, conn)
+    players.append(p)
+
+    start_new_thread(threaded_client_handler, (p,))
