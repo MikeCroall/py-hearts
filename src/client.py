@@ -2,23 +2,32 @@ import socket
 from _thread import *
 from tkinter import *
 
-global chat
+global lst_chat
 global message
 root = Tk()
-chat = StringVar()
+
 message = StringVar()
 
 # gui
 root.wm_title("py-hearts client")
+
+
+def enter_from_box(event):
+    btn_send_clicked()
+
+
+root.bind('<Return>', enter_from_box)
 
 frame_chat_history = Frame(root)
 frame_chat_history.pack(fill=BOTH, expand=1)
 frame_send_message = Frame(root)
 frame_send_message.pack(side=BOTTOM, fill=X, expand=0)
 
-chat.set("Welcome to py-hearts!\n")
-lbl_chat = Label(frame_chat_history, textvariable=chat, anchor=NW, justify=LEFT, font=("Arial", 12), background="white")
-lbl_chat.pack(fill=BOTH, expand=1)
+scrollbar = Scrollbar(frame_chat_history)
+scrollbar.pack(side=RIGHT, fill=Y)
+lst_chat = Listbox(frame_chat_history, font=("Arial", 12), yscrollcommand=scrollbar.set, width=60)
+lst_chat.pack(side=LEFT, fill=BOTH, expand=1)
+scrollbar.config(command=lst_chat.yview)
 txt_message = Entry(frame_send_message, font=("Arial", 12), textvariable=message)
 txt_message.pack(side=LEFT, fill=X, expand=1)
 
@@ -26,17 +35,17 @@ txt_message.pack(side=LEFT, fill=X, expand=1)
 def btn_send_clicked():
     try:
         if keep_alive:
-            print("Sending message...")
+            #print("Sending message...")
             text = message.get()
             if text.strip() == "":
                 return
             if text[0] == "/":
                 print("Commands not yet implemented")
-                # todo handle command
+                # todo handle commands
             else:
                 s.sendall(text.encode())
                 add_to_chat_log("Me: {}".format(text))
-                print("Message sent")
+                #print("Message sent")
             message.set("")
     except Exception as ex:
         print("Something went wrong!")
@@ -49,8 +58,11 @@ btn_send.pack(side=RIGHT)
 
 
 def add_to_chat_log(m):
-    chat.set("{}\n{}".format(chat.get(), m))
+    # \n does not print as new line in list views, handle it separately
+    for line in m.split("\n"):
+        lst_chat.insert(END, line)
     print(m)
+    lst_chat.see(END)
 
 
 # connection
