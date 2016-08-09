@@ -29,6 +29,7 @@ def threaded_client_handler(player):
         print(player.name + ": " + message)
         broadcast_except_player(player.name + ": " + message, player)
     conn.close()
+    players.remove(player)
     print("{} disconnected".format(player.name))
 
 
