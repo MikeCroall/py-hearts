@@ -20,22 +20,23 @@ print("Waiting for a connection on port {}".format(port))
 
 
 def threaded_client_handler(player):
-    conn.sendall("You have successfully connected to the server @ {} as {}!\nCurrently connected: {}".format(
-        socket.gethostname(), player.name, ', '.join([p.name for p in players])).encode())
+    conn.sendall(
+        "You have successfully connected to py-hearts @ {}\nYou are {}!\nCurrently connected: {}".format(
+            socket.gethostname(), player.name, ', '.join([p.name for p in players])).encode())
     while True:
         message = player.said()
-        if not message:
+        if not message or message == "/exit":
             break
         print(player.name + ": " + message)
         broadcast_except_player(player.name + ": " + message, player)
     conn.close()
     players.remove(player)
     print("{} disconnected".format(player.name))
+    broadcast("{} disconnected".format(player.name))
 
 
 def broadcast(message):
-    for player in players:
-        player.tell(message)
+    broadcast_except_player(message, None)
 
 
 def broadcast_except_player(message, not_this_player):
@@ -49,7 +50,7 @@ while True:
         conn, addr = s.accept()
         name = "user_{}".format(len(players) + 1)
 
-        print("Connected to {}:{}, as {}".format(addr[0], addr[1], name))
+        print("{} connected from {}:{}".format(name, addr[0], addr[1]))
         broadcast("{} has joined".format(name))
 
         p = Player(name, conn)
