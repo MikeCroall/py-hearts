@@ -1,6 +1,11 @@
 import socket
-from _thread import *
+try:
+    from _thread import *
+except ImportError:
+    print("Please ensure you are using Python 3+\nWe must import _thread")
 from tkinter import *
+
+ready = False
 
 global lst_chat
 global message
@@ -34,7 +39,7 @@ txt_message.pack(side=LEFT, fill=X, expand=1)
 
 def btn_send_clicked():
     try:
-        if keep_alive:
+        if keep_alive and ready:
             #print("Sending message...")
             text = message.get()
             if text.strip() == "":
@@ -94,5 +99,6 @@ def receive_loop():
 
 start_new_thread(receive_loop, ())
 
+ready = True
 root.mainloop()
 s.close()
