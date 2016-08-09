@@ -20,15 +20,14 @@ def receive_loop():
         data = s.recv(1024)
         if not data:
             continue  # if no data actually received
-        print(chr(27) + "[2A" + data.decode("utf-8") + "\033[K" + "\n")
-        # above: special strings go to line above (avoid messing with input looks) and clear to end of line
-        # todo GUI to avoid needing this awful (and not working properly) special character system
+        print(data.decode("utf-8"))
+        # todo gui
 
 start_new_thread(receive_loop, ())
 
 try:
     while keep_alive:
-        data = input('Me: ')
+        data = input('')
         if not data:
             continue  # if hit enter without any actual input
         s.sendall(data.encode())
