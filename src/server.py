@@ -20,7 +20,8 @@ print("Waiting for a connection on port {}".format(port))
 
 
 def threaded_client_handler(player):
-    conn.sendall("You have successfully connected to the hearts server @ {}!\n".format(socket.gethostname()).encode())
+    conn.sendall("You have successfully connected to the hearts server @ {} as {}!\nCurrently connected: {}".format(
+        socket.gethostname(), player.name, ', '.join([p.name for p in players])).encode())
     while True:
         message = player.said()
         if not message:
