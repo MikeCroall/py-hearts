@@ -5,6 +5,9 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 keep_alive = True
 
 server = input('Server IP: ')  # for testing on localhost use 127.0.0.1
+if not server:
+    server = "127.0.0.1"
+    print("No server entered, defaulting to 127.0.0.1")
 port = 3033
 
 try:
