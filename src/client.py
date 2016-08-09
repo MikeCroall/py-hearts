@@ -4,11 +4,15 @@ from _thread import *
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 keep_alive = True
 
-server = "127.0.0.1"  # for testing - only 127.0.0.1 while server.py running on same machine
-port = 3000
+server = input('Server IP: ')  # for testing on localhost use 127.0.0.1
+port = 3033
 
-s.connect((server, port))
-print("Connection established\n")
+try:
+    s.connect((server, port))
+    print("Connection established\n")
+except:
+    print("Connection could not be made")
+    keep_alive = False
 
 
 def receive_loop():

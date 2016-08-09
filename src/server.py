@@ -5,7 +5,7 @@ from player import Player
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 host = ""  # means can run anywhere basically
-port = 3000
+port = 3033
 
 players = []
 
