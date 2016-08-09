@@ -9,13 +9,15 @@ chat = StringVar()
 message = StringVar()
 
 # gui
+root.wm_title("py-hearts client")
+
 frame_chat_history = Frame(root)
-frame_chat_history.pack()
+frame_chat_history.pack(fill=BOTH, expand=1)
 frame_send_message = Frame(root)
-frame_send_message.pack(side=BOTTOM, fill=X, expand=1)
+frame_send_message.pack(side=BOTTOM, fill=X, expand=0)
 
 chat.set("Welcome to py-hearts!\n")
-lbl_chat = Label(frame_chat_history, textvariable=chat, anchor=NW, justify=LEFT, font=("Arial", 12))
+lbl_chat = Label(frame_chat_history, textvariable=chat, anchor=NW, justify=LEFT, font=("Arial", 12), background="white")
 lbl_chat.pack(fill=BOTH, expand=1)
 txt_message = Entry(frame_send_message, font=("Arial", 12), textvariable=message)
 txt_message.pack(side=LEFT, fill=X, expand=1)
@@ -25,12 +27,17 @@ def btn_send_clicked():
     try:
         if keep_alive:
             print("Sending message...")
-            if message.get() == "":
+            text = message.get()
+            if text.strip() == "":
                 return
-            s.sendall(message.get().encode())
-            add_to_chat_log("Me: {}".format(message.get()))
+            if text[0] == "/":
+                print("Commands not yet implemented")
+                # todo handle command
+            else:
+                s.sendall(text.encode())
+                add_to_chat_log("Me: {}".format(text))
+                print("Message sent")
             message.set("")
-            print("Message sent")
     except Exception as ex:
         print("Something went wrong!")
         print(ex)
