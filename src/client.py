@@ -7,6 +7,8 @@ from tkinter import *
 
 ready = False
 
+username = "unset_username"
+
 root = Tk()
 
 message = StringVar()
@@ -36,14 +38,18 @@ txt_message.pack(side=LEFT, fill=X, expand=1)
 
 
 def btn_send_clicked():
+    global username
     try:
         if keep_alive and ready:
             text = message.get()
             if text.strip() == "":
                 return
             if text[0] == "/":
-                print("Commands not yet implemented")
-                # todo handle commands
+                if text.lower().startswith("/name "):
+                    s.sendall(text.encode())
+                    username = " ".join(text.split(" ")[1:])
+                else:
+                    add_to_chat_log("Command not recognised")
             else:
                 s.sendall(text.encode())
                 add_to_chat_log("{}: {}".format(username, text))
@@ -85,7 +91,7 @@ port = 3033
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established\n")
-    s.sendall("/name {}".format(username))
+    s.sendall("/name {}".format(username).encode())
 except:
     add_to_chat_log("Connection could not be made")
     keep_alive = False

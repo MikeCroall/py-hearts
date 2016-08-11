@@ -24,7 +24,7 @@ print("Waiting for a connection on port {}".format(port))
 
 def threaded_client_handler(player):
     conn.sendall(
-        "You have successfully connected to py-hearts @ {}\nYou are {}!\nCurrently connected: {}".format(
+        "You have successfully connected to py-hearts!\nCurrently connected: {}".format(
             socket.gethostname(), player.name, ', '.join([p.name for p in players])).encode())
     while True:
         message = player.said()
@@ -34,7 +34,9 @@ def threaded_client_handler(player):
             # command other than exit
             if message.lower().startswith("/name "):
                 chosen_name = " ".join(message.split(" ")[1:])
+                broadcast_except_player("{} changed their name to {}".format(player.name, chosen_name), player)
                 player.name = chosen_name
+                player.tell("You have set your username to {}".format(chosen_name))
         else:
             print(player.name + ": " + message)
             broadcast_except_player(player.name + ": " + message, player)
