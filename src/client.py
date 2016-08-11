@@ -48,6 +48,8 @@ def btn_send_clicked():
                 if text.lower().startswith("/name "):
                     s.sendall(text.encode())
                     username = " ".join(text.split(" ")[1:])
+                elif text.lower().startswith("/exit"):
+                    s.sendall(text.encode())
                 else:
                     add_to_chat_log("Command not recognised")
             else:
@@ -65,7 +67,7 @@ btn_send.pack(side=RIGHT)
 
 
 def add_to_chat_log(m):
-    # \n does not print as new line in list views, handle it separately
+    # \n does not print as new line in list views, it prints as a bell, handle it separately
     for line in m.split("\n"):
         lst_chat.insert(END, line)
     print(m)
@@ -100,11 +102,16 @@ except:
 def receive_loop():
     global keep_alive
     while keep_alive:
-        data = s.recv(1024)
-        if not data:
-            continue  # if no data actually received
-        add_to_chat_log(data.decode("utf-8"))
-
+        try:
+            data = s.recv(1024)
+            if not data:
+                add_to_chat_log("Disconnected from server")
+                keep_alive = False
+                break  # if server closed
+            add_to_chat_log(data.decode("utf-8"))
+        except socket.error as ex:
+            keep_alive = False
+            add_to_chat_log("Socket error {}".format(str(ex)))
 
 start_new_thread(receive_loop, ())
 
