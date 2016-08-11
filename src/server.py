@@ -32,14 +32,14 @@ try:
             if message[0] == "/":
                 # command other than exit
                 if message.lower().startswith("/name "):
+                    original_name = player.name
                     chosen_name = " ".join(message.split(" ")[1:])
-                    broadcast_except_player("{} changed their name to {}".format(player.name, chosen_name), player)
                     player.name = chosen_name
-                    player.tell(
-                        "You have set your username to {}".format(chosen_name) + "\nCurrently connected: {}".format(
-                            ', '.join([p.name for p in players])))
-                    broadcast_except_player("Currently connected: {}".format(', '.join([p.name for p in players])),
-                                            player)
+                    print("{} changed their username to {}".format(original_name, chosen_name))
+                    player.tell("You have set your username to {}\nCurrently connected: {}".format(
+                        chosen_name, connected_players()))
+                    broadcast_except_player("{} changed their username to {}\nCurrently connected: {}".format(
+                        original_name, chosen_name, connected_players()), player)
             else:
                 print(player.name + ": " + message)
                 broadcast_except_player(player.name + ": " + message, player)
@@ -59,10 +59,13 @@ try:
                 player.tell(message)
 
 
+    def connected_players():
+        return ', '.join([p.name for p in players])
+
     while True:
         try:
             conn, addr = s.accept()
-            name = "user_{}".format(len(players) + 1)
+            name = "anonymous_new_user"
 
             print("{} connected from {}:{}".format(name, addr[0], addr[1]))
             broadcast("{} has joined".format(name))

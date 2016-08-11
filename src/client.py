@@ -81,7 +81,7 @@ keep_alive = True
 username = input("Username: ")
 if not username:
     add_to_chat_log("No username entered, generating username...")
-    username = "user_{}".format(str(int(round(time.time() * 1000)))[-4])
+    username = "user_{}".format(str(int(time.time()))[-4:])
 
 server = input("Server IP: ")  # for testing on localhost use 127.0.0.1
 if not server:
