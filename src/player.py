@@ -4,7 +4,10 @@ class Player:
         self.conn = conn
 
     def tell(self, message):
-        self.conn.sendall(message.encode())
+        if self.conn:
+            self.conn.sendall(message.encode())
+        else:
+            print("{}'s connection is failing".format(self.name))
 
     def said(self):
         return self.conn.recv(2048).decode("utf-8")
