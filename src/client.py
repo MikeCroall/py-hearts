@@ -1,4 +1,4 @@
-import socket
+import socket, time
 try:
     from _thread import *
 except ImportError:
@@ -7,8 +7,6 @@ from tkinter import *
 
 ready = False
 
-global lst_chat
-global message
 root = Tk()
 
 message = StringVar()
@@ -40,7 +38,6 @@ txt_message.pack(side=LEFT, fill=X, expand=1)
 def btn_send_clicked():
     try:
         if keep_alive and ready:
-            #print("Sending message...")
             text = message.get()
             if text.strip() == "":
                 return
@@ -49,11 +46,10 @@ def btn_send_clicked():
                 # todo handle commands
             else:
                 s.sendall(text.encode())
-                add_to_chat_log("Me: {}".format(text))
-                #print("Message sent")
+                add_to_chat_log("{}: {}".format(username, text))
             message.set("")
     except Exception as ex:
-        print("Something went wrong!")
+        print("Something went wrong sending that message!")
         print(ex)
         raise
 
@@ -74,15 +70,22 @@ def add_to_chat_log(m):
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 keep_alive = True
 
-server = input('Server IP: ')  # for testing on localhost use 127.0.0.1
+username = input("Username: ")
+if not username:
+    add_to_chat_log("No username entered, generating username...")
+    username = "user_{}".format(str(int(round(time.time() * 1000)))[-4])
+
+server = input("Server IP: ")  # for testing on localhost use 127.0.0.1
 if not server:
     server = "127.0.0.1"
     add_to_chat_log("No server entered, defaulting to 127.0.0.1")
+
 port = 3033
 
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established\n")
+    s.sendall("/name {}".format(username))
 except:
     add_to_chat_log("Connection could not be made")
     keep_alive = False

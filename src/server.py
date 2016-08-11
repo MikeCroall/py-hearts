@@ -1,5 +1,8 @@
 import socket
-from _thread import *
+try:
+    from _thread import *
+except ImportError:
+    print("Please ensure you are using Python 3+\nWe must import _thread")
 from player import Player
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,8 +30,14 @@ def threaded_client_handler(player):
         message = player.said()
         if not message or message == "/exit":
             break
-        print(player.name + ": " + message)
-        broadcast_except_player(player.name + ": " + message, player)
+        if message[0] == "/":
+            # command other than exit
+            if message.lower().startswith("/name "):
+                chosen_name = " ".join(message.split(" ")[1:])
+                player.name = chosen_name
+        else:
+            print(player.name + ": " + message)
+            broadcast_except_player(player.name + ": " + message, player)
     conn.close()
     players.remove(player)
     print("{} disconnected".format(player.name))
