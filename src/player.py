@@ -4,9 +4,9 @@ class Player:
         self.conn = conn
 
     def tell(self, message):
-        if self.conn:
+        try:
             self.conn.sendall(message.encode())
-        else:
+        except:
             print("{}'s connection is failing".format(self.name))
 
     def said(self):
