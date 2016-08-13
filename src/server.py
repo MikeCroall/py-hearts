@@ -21,25 +21,32 @@ try:
     print("Waiting for a connection on port {}".format(port))
 
 
+    def handle_command_from_player(message, player):
+        if message.lower().startswith("/name "):
+            original_name = player.name
+            player.name = " ".join(message.split(" ")[1:])
+            print("{} changed their username to {}".format(original_name, player.name))
+            connected = connected_players()
+            player.tell("You have set your username to {}\nCurrently connected: {}".format(
+                player.name, connected))
+            broadcast_except_player("{} changed their username to {}\nCurrently connected: {}".format(
+                original_name, player.name, connected), player)
+        else:
+            print("{} attempted unrecognised command {}".format(player.name, message))
+            player.tell("You have attempted an unrecognised command")
+
+
     def threaded_client_handler(player):
         conn.sendall("You have successfully connected to py-hearts!".encode())
         while True:
             if not player.conn:
-                break  # player disconnect?
+                break  # player disconnect? probably not the way to check it
             message = player.said()
             if not message or message == "/exit":
-                break
-            if message[0] == "/":
+                break  # player definitely disconnected
+            if message.startswith("/"):
                 # command other than exit
-                if message.lower().startswith("/name "):
-                    original_name = player.name
-                    chosen_name = " ".join(message.split(" ")[1:])
-                    player.name = chosen_name
-                    print("{} changed their username to {}".format(original_name, chosen_name))
-                    player.tell("You have set your username to {}\nCurrently connected: {}".format(
-                        chosen_name, connected_players()))
-                    broadcast_except_player("{} changed their username to {}\nCurrently connected: {}".format(
-                        original_name, chosen_name, connected_players()), player)
+                handle_command_from_player(message, player)
             else:
                 print(player.name + ": " + message)
                 broadcast_except_player(player.name + ": " + message, player)

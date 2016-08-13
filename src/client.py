@@ -1,4 +1,5 @@
 import socket, time
+
 try:
     from _thread import *
 except ImportError:
@@ -6,35 +7,15 @@ except ImportError:
 from tkinter import *
 
 ready = False
-
 username = "unset_username"
-
 root = Tk()
-
+root.withdraw()
 message = StringVar()
 
+
 # gui
-root.wm_title("py-hearts client")
-
-
 def enter_from_box(event):
     btn_send_clicked()
-
-
-root.bind('<Return>', enter_from_box)
-
-frame_chat_history = Frame(root)
-frame_chat_history.pack(fill=BOTH, expand=1)
-frame_send_message = Frame(root)
-frame_send_message.pack(side=BOTTOM, fill=X, expand=0)
-
-scrollbar = Scrollbar(frame_chat_history)
-scrollbar.pack(side=RIGHT, fill=Y)
-lst_chat = Listbox(frame_chat_history, font=("Arial", 12), yscrollcommand=scrollbar.set, width=60)
-lst_chat.pack(side=LEFT, fill=BOTH, expand=1)
-scrollbar.config(command=lst_chat.yview)
-txt_message = Entry(frame_send_message, font=("Arial", 12), textvariable=message)
-txt_message.pack(side=LEFT, fill=X, expand=1)
 
 
 def btn_send_clicked():
@@ -44,14 +25,12 @@ def btn_send_clicked():
             text = message.get()
             if text.strip() == "":
                 return
-            if text[0] == "/":
+            if text.startswith("/"):
                 if text.lower().startswith("/name "):
                     s.sendall(text.encode())
                     username = " ".join(text.split(" ")[1:])
-                elif text.lower().startswith("/exit"):
-                    s.sendall(text.encode())
                 else:
-                    add_to_chat_log("Command not recognised")
+                    s.sendall(text.encode())
             else:
                 s.sendall(text.encode())
                 add_to_chat_log("{}: {}".format(username, text))
@@ -62,16 +41,33 @@ def btn_send_clicked():
         raise
 
 
+root.wm_title("py-hearts client - by Mike Croall")
+root.bind('<Return>', enter_from_box)
+
+frame_chat_history = Frame(root)
+frame_chat_history.pack(fill=BOTH, expand=1)
+frame_send_message = Frame(root)
+frame_send_message.pack(side=BOTTOM, fill=X, expand=0)
+
+scrollbar = Scrollbar(frame_chat_history)
+lst_chat = Listbox(frame_chat_history, font=("Arial", 12), yscrollcommand=scrollbar.set, width=60)
+scrollbar.config(command=lst_chat.yview)
+txt_message = Entry(frame_send_message, font=("Arial", 12), textvariable=message)
 btn_send = Button(frame_send_message, text="Send", font=("Arial", 12), command=btn_send_clicked)
+
+scrollbar.pack(side=RIGHT, fill=Y)
+lst_chat.pack(side=LEFT, fill=BOTH, expand=1)
+txt_message.pack(side=LEFT, fill=X, expand=1)
 btn_send.pack(side=RIGHT)
 
 
-def add_to_chat_log(m):
+def add_to_chat_log(m, c="black"):
     # \n does not print as new line in list views, it prints as a bell, handle it separately
     for line in m.split("\n"):
         lst_chat.insert(END, line)
     print(m)
     lst_chat.see(END)
+    lst_chat.itemconfigure(END, fg=c)
 
 
 # connection
@@ -80,22 +76,22 @@ keep_alive = True
 
 username = input("Username: ")
 if not username:
-    add_to_chat_log("No username entered, generating username...")
+    add_to_chat_log("No username entered, generating username...", c="orange")
     username = "user_{}".format(str(int(time.time() * 1000))[-4:])
 
 server = input("Server IP: ")  # for testing on localhost use 127.0.0.1
 if not server:
     server = "127.0.0.1"
-    add_to_chat_log("No server entered, defaulting to 127.0.0.1")
+    add_to_chat_log("No server entered, defaulting to 127.0.0.1", c="orange")
 
 port = 3033
 
 try:
     s.connect((server, port))
-    add_to_chat_log("Connection established\n")
+    add_to_chat_log("Connection established", c="green")
     s.sendall("/name {}".format(username).encode())
 except:
-    add_to_chat_log("Connection could not be made")
+    add_to_chat_log("Connection could not be made", c="red")
     keep_alive = False
 
 
@@ -105,16 +101,21 @@ def receive_loop():
         try:
             data = s.recv(1024)
             if not data:
-                add_to_chat_log("Disconnected from server")
+                add_to_chat_log("Disconnected from server", c="red")
                 keep_alive = False
                 break  # if server closed
             add_to_chat_log(data.decode("utf-8"))
         except socket.error as ex:
             keep_alive = False
-            add_to_chat_log("Socket error {}".format(str(ex)))
+            add_to_chat_log("Socket error {}".format(str(ex)), c="red")
+
 
 start_new_thread(receive_loop, ())
 
 ready = True
-root.mainloop()
+
+if __name__ == "__main__":
+    root.deiconify()
+    root.mainloop()
+
 s.close()
