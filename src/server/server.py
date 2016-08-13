@@ -7,11 +7,13 @@ except ImportError:
 from player import Player
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # prevents address being unavailable when restarting server
 
 host = ""  # means can run anywhere basically
 port = 3033
 
 players = []
+accepted_colours = ["white", "black", "red", "green", "blue", "cyan", "yellow", "magenta"]  # or hex codes
 
 try:
     s.bind((host, port))
@@ -31,6 +33,18 @@ try:
                 player.name, connected))
             broadcast_except_player("{} changed their username to {}\nCurrently connected: {}".format(
                 original_name, player.name, connected), player)
+
+        elif message.lower().startswith("/colour "):
+            colour = message.split(" ")[1].lower()
+            if not colour: return
+            if colour in accepted_colours:
+                player.colour = colour
+                player.tell("You have set your colour to {}".format(colour), c=colour)
+                print("{} set their colour to {}".format(player.name, player.colour))
+                # todo check for hex codes in elif
+            else:
+                player.tell("{} is not a recognised colour name".format(colour)) # todo ", try using hex codes instead"
+
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
             player.tell("You have attempted an unrecognised command")
@@ -57,17 +71,17 @@ try:
 
 
     def broadcast(message):
-        broadcast_except_player(message, None)
+        for player in players: player.tell(message)
 
 
     def broadcast_except_player(message, not_this_player):
         for player in players:
             if player != not_this_player:
-                player.tell(message)
+                player.tell(message, not_this_player.colour)
 
 
     def connected_players():
-        return ', '.join([p.name for p in players])
+        return "({}) - ".format(len(players)) + ', '.join([p.name for p in players])
 
 
     while True:

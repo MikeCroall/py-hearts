@@ -95,6 +95,17 @@ except:
     keep_alive = False
 
 
+def handle_command_from_server(command):
+    # slash has already been removed
+    parts = command.split(" ")
+    type = parts[0].lower()
+    if type == "colour":
+        actual_message = " ".join(parts[2:])
+        add_to_chat_log(actual_message, c=parts[1])
+    else:
+        add_to_chat_log("Received unrecognised command from server /{}".format(command))
+
+
 def receive_loop():
     global keep_alive
     while keep_alive:
@@ -104,7 +115,12 @@ def receive_loop():
                 add_to_chat_log("Disconnected from server", c="red")
                 keep_alive = False
                 break  # if server closed
-            add_to_chat_log(data.decode("utf-8"))
+            text = data.decode("utf-8")
+            if text.startswith("/"):
+                print("Received command from server {}".format(text))
+                handle_command_from_server(text[1:])  # removes /
+            else:
+                add_to_chat_log(data.decode("utf-8"))
         except socket.error as ex:
             keep_alive = False
             add_to_chat_log("Socket error {}".format(str(ex)), c="red")
