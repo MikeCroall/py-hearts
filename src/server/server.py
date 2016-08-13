@@ -43,7 +43,7 @@ try:
                 print("{} set their colour to {}".format(player.name, player.colour))
                 # todo check for hex codes in elif
             else:
-                player.tell("{} is not a recognised colour name".format(colour)) # todo ", try using hex codes instead"
+                player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
 
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
@@ -71,13 +71,22 @@ try:
 
 
     def broadcast(message):
-        for player in players: player.tell(message)
+        failed = []
+        for player in players:
+            if not player.tell(message):
+                failed.append(player)
+        for p in failed: players.remove(p)
+        for p in failed: broadcast("{} disconnected".format(p.name))
 
 
     def broadcast_except_player(message, not_this_player):
+        failed = []
         for player in players:
             if player != not_this_player:
-                player.tell(message, not_this_player.colour)
+                if not player.tell(message, not_this_player.colour):
+                    failed.append(player)
+        for p in failed: players.remove(p)
+        for p in failed: broadcast("{} disconnected".format(p.name))
 
 
     def connected_players():

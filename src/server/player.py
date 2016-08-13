@@ -10,8 +10,10 @@ class Player:
                 self.conn.sendall(message.encode())
             else:
                 self.conn.sendall("/colour {} {}".format(c, message).encode())
+            return True
         except:
             print("{}'s connection is failing".format(self.name))
+            return False
 
     def said(self):
         return self.conn.recv(2048).decode("utf-8")
