@@ -7,7 +7,12 @@ except ImportError:
 from tkinter import *
 
 ready = False
+accepted_colours = ["white", "black", "red", "green", "blue", "cyan", "yellow", "magenta"]
+
+# variables that should be matched on the server side
 username = "unset_username"
+colour = "black"
+
 root = Tk()
 root.withdraw()
 message = StringVar()
@@ -20,20 +25,27 @@ def enter_from_box(event):
 
 def btn_send_clicked():
     global username
+    global colour
     try:
         if keep_alive and ready:
             text = message.get()
             if text.strip() == "":
                 return
-            if text.startswith("/"):
+            if text.startswith("/"):  # local command handling
                 if text.lower().startswith("/name "):
                     s.sendall(text.encode())
                     username = " ".join(text.split(" ")[1:])
+                if text.lower().startswith("/colour "):
+                    s.sendall(text.encode())
+                    chosen_colour = text.lower().split(" ")[1]
+                    if chosen_colour in accepted_colours:
+                        colour = text.lower().split(" ")[1]
+                        print("Colour accepted: {}, global colour = {}".format(chosen_colour, colour))
                 else:
                     s.sendall(text.encode())
             else:
                 s.sendall(text.encode())
-                add_to_chat_log("{}: {}".format(username, text))
+                add_me_to_chat_log("{}: {}".format(username, text))
             message.set("")
     except Exception as ex:
         print("Something went wrong sending that message!")
@@ -68,6 +80,15 @@ def add_to_chat_log(m, c="black"):
     print(m)
     lst_chat.see(END)
     lst_chat.itemconfigure(END, fg=c)
+
+
+def add_me_to_chat_log(m):
+    global colour
+    for line in m.split("\n"):
+        lst_chat.insert(END, line)
+    print(m)
+    lst_chat.see(END)
+    lst_chat.itemconfigure(END, fg=colour)
 
 
 # connection
@@ -117,7 +138,7 @@ def receive_loop():
                 break  # if server closed
             text = data.decode("utf-8")
             if text.startswith("/"):
-                print("Received command from server {}".format(text))
+                #print("Received command from server {}".format(text))  # for debugging
                 handle_command_from_server(text[1:])  # removes /
             else:
                 add_to_chat_log(data.decode("utf-8"))
@@ -137,7 +158,6 @@ if __name__ == "__main__":
     try:
         root.mainloop()
     except KeyboardInterrupt as ex:  # allow (albeit slow) keyboard interrupt in terminal to exit window
-        root.destroy()
         pass
     except:
         raise

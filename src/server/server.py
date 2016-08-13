@@ -31,16 +31,17 @@ try:
             connected = connected_players()
             player.tell("You have set your username to {}\nCurrently connected: {}".format(
                 player.name, connected))
-            broadcast_except_player("{} changed their username to {}\nCurrently connected: {}".format(
-                original_name, player.name, connected), player)
+            broadcast_except_player("{} set their username to {}\nCurrently connected ({}): {}".format(
+                original_name, player.name, len(players), connected), player)
 
         elif message.lower().startswith("/colour "):
             colour = message.split(" ")[1].lower()
             if not colour: return
             if colour in accepted_colours:
                 player.colour = colour
-                player.tell("You have set your colour to {}".format(colour), c=colour)
                 print("{} set their colour to {}".format(player.name, player.colour))
+                player.tell("You have set your colour to {}".format(colour), c=colour)
+                broadcast_except_player("{} set their colour to {}".format(player.name, player.colour), player)
                 # todo check for hex codes in elif
             else:
                 player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
@@ -65,7 +66,9 @@ try:
                 print(player.name + ": " + message)
                 broadcast_except_player(player.name + ": " + message, player)
         conn.close()
-        players.remove(player)
+        try:
+            players.remove(player)
+        except: pass
         print("{} disconnected".format(player.name))
         broadcast("{} disconnected".format(player.name))
 
@@ -75,7 +78,10 @@ try:
         for player in players:
             if not player.tell(message):
                 failed.append(player)
-        for p in failed: players.remove(p)
+        for p in failed:
+            try:
+                players.remove(p)
+            except: pass
         for p in failed: broadcast("{} disconnected".format(p.name))
 
 
@@ -85,12 +91,15 @@ try:
             if player != not_this_player:
                 if not player.tell(message, not_this_player.colour):
                     failed.append(player)
-        for p in failed: players.remove(p)
+        for p in failed:
+            try:
+                players.remove(p)
+            except: pass
         for p in failed: broadcast("{} disconnected".format(p.name))
 
 
     def connected_players():
-        return "({}) - ".format(len(players)) + ', '.join([p.name for p in players])
+        return ', '.join([p.name for p in players])
 
 
     while True:
