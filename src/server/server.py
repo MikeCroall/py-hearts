@@ -69,6 +69,7 @@ try:
     def connected_players():
         return ', '.join([p.name for p in players])
 
+
     while True:
         try:
             conn, addr = s.accept()
