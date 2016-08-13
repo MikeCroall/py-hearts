@@ -108,6 +108,8 @@ def receive_loop():
         except socket.error as ex:
             keep_alive = False
             add_to_chat_log("Socket error {}".format(str(ex)), c="red")
+    time.sleep(1)
+    root.destroy()
 
 
 start_new_thread(receive_loop, ())
@@ -119,6 +121,7 @@ if __name__ == "__main__":
     try:
         root.mainloop()
     except KeyboardInterrupt as ex:  # allow (albeit slow) keyboard interrupt in terminal to exit window
+        root.destroy()
         pass
     except:
         raise
