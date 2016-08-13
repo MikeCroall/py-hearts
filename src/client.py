@@ -116,6 +116,11 @@ ready = True
 
 if __name__ == "__main__":
     root.deiconify()
-    root.mainloop()
+    try:
+        root.mainloop()
+    except KeyboardInterrupt as ex:  # allow (albeit slow) keyboard interrupt in terminal to exit window
+        pass
+    except:
+        raise
 
 s.close()
