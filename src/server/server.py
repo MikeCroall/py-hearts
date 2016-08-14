@@ -24,7 +24,8 @@ try:
 
 
     def handle_command_from_player(message, player):
-        if message.lower().startswith("/name "):
+        type = message.lower().split(" ")[0][1:]
+        if type == "name":
             original_name = player.name
             player.name = " ".join(message.split(" ")[1:])
             print("{} changed their username to {}".format(original_name, player.name))
@@ -34,7 +35,7 @@ try:
             broadcast_except_player("{} set their username to {}\nCurrently connected ({}): {}".format(
                 original_name, player.name, len(players), connected), player)
 
-        elif message.lower().startswith("/colour "):
+        elif type == "colour":
             colour = message.split(" ")[1].lower()
             if not colour: return
             if colour in accepted_colours:
@@ -45,6 +46,9 @@ try:
                 # todo check for hex codes in elif
             else:
                 player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
+
+        elif type == "hand":
+            player.tell("This command is not ready yet")
 
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
