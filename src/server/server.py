@@ -137,3 +137,7 @@ except socket.error as ex:
     print(str(ex))
 
 s.close()
+
+# todo never use \t, replace with spaces
+# todo print new line before and after /help print out
+# todo indent each command line in /help print out
