@@ -50,13 +50,17 @@ try:
         elif type == "hand":
             player.tell("This command is not ready yet")
 
+        elif type == "help":
+            player.tell(
+                "Available commands:\n/name [new name]\t- change your name\n/colour [new colour]\t- change your text colour\n/hand\t- show your current hand\n/help\t- see this message")
+
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
             player.tell("You have attempted an unrecognised command")
 
 
     def threaded_client_handler(player):
-        conn.sendall("You have successfully connected to py-hearts!".encode())
+        conn.sendall("You have successfully connected to py-hearts!\n/help\tfor information on the commands".encode())
         while True:
             if not player.conn:
                 break  # player disconnect? probably not the way to check it
@@ -72,7 +76,8 @@ try:
         conn.close()
         try:
             players.remove(player)
-        except: pass
+        except:
+            pass
         print("{} disconnected".format(player.name))
         broadcast("{} disconnected".format(player.name))
 
@@ -85,7 +90,8 @@ try:
         for p in failed:
             try:
                 players.remove(p)
-            except: pass
+            except:
+                pass
         for p in failed: broadcast("{} disconnected".format(p.name))
 
 
@@ -98,7 +104,8 @@ try:
         for p in failed:
             try:
                 players.remove(p)
-            except: pass
+            except:
+                pass
         for p in failed: broadcast("{} disconnected".format(p.name))
 
 
