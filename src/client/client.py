@@ -77,18 +77,18 @@ def add_to_chat_log(m, c="black"):
     # \n does not print as new line in list views, it prints as a bell, handle it separately
     for line in m.split("\n"):
         lst_chat.insert(END, line)
+        lst_chat.itemconfigure(END, fg=c)
     print(m)
     lst_chat.see(END)
-    lst_chat.itemconfigure(END, fg=c)
 
 
 def add_me_to_chat_log(m):
     global colour
     for line in m.split("\n"):
         lst_chat.insert(END, line)
+        lst_chat.itemconfigure(END, fg=colour)
     print(m)
     lst_chat.see(END)
-    lst_chat.itemconfigure(END, fg=colour)
 
 
 # connection
@@ -123,6 +123,12 @@ def handle_command_from_server(command):
     if type == "colour":
         actual_message = " ".join(parts[2:])
         add_to_chat_log(actual_message, c=parts[1])
+    elif type == "hand":
+        suits_to_print_in_colour = (" ".join(parts[2:])).split("\n")
+        for x, line in enumerate(suits_to_print_in_colour):
+            # order ALWAYS clubs, diamonds, spades, hearts (in this game at least)
+            add_to_chat_log(line, "black" if x % 2 == 0 else "red")
+        print("Hand is as shown:\n{}".format("\n".join(suits_to_print_in_colour)))
     else:
         add_to_chat_log("Received unrecognised command from server /{}".format(command))
 
