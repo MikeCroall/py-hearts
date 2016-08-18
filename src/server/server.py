@@ -24,18 +24,24 @@ try:
 
 
     def handle_command_from_player(message, player):
-        type = message.lower().split(" ")[0][1:]
-        if type == "name":
+        args = message.split(" ")
+        if len(args) == 0: return
+        type = args[0]
+        if type == "/name":
             original_name = player.name
-            player.name = " ".join(message.split(" ")[1:])
-            print("{} changed their username to {}".format(original_name, player.name))
-            connected = connected_players()
-            player.tell("You have set your username to {}\nCurrently connected: {}".format(
-                player.name, connected))
-            broadcast_except_player("{} set their username to {}\nCurrently connected ({}): {}".format(
-                original_name, player.name, len(players), connected), player)
+            desired_name = " ".join(message.split(" ")[1:])
+            if 0 < len(desired_name) <= 16:
+                player.name = desired_name
+                print("{} changed their username to {}".format(original_name, player.name))
+                connected = connected_players()
+                player.tell("You have set your username to {}\nCurrently connected: {}".format(
+                    player.name, connected))
+                broadcast_except_player("{} set their username to {}\nCurrently connected ({}): {}".format(
+                    original_name, player.name, len(players), connected), player)
+            else:
+                print("{} wants (too long) username {}".format(original_name, desired_name))
 
-        elif type == "colour":
+        elif type == "/colour":
             colour = message.split(" ")[1].lower()
             if not colour: return
             if colour in accepted_colours:
@@ -47,10 +53,10 @@ try:
             else:
                 player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
 
-        elif type == "hand":
+        elif type == "/hand":
             player.tell("This command is not ready yet")
 
-        elif type == "help":
+        elif type == "/help":
             player.tell(
                 "\nAvailable commands:\n    /name [new name]    - change your name\n    /colour [new colour]    - change your text colour\n    /hand    - show your current hand\n    /help    - see this message\n")
 

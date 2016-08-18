@@ -23,26 +23,41 @@ def enter_from_box(event):
     btn_send_clicked()
 
 
-def btn_send_clicked():
+def handle_command_to_send(text):
     global username
     global colour
+
+    args = text.split(" ")
+    if len(args) == 0: return
+
+    if args[0].lower() == "/name" and len(args) > 1:
+        desired_username = " ".join(args[1:])
+        if 0 < len(desired_username) <= 16:
+            username = desired_username
+            s.sendall(text.encode())
+        else:
+            add_to_chat_log("Please ensure your username is between 1 and 16 characters long!")
+
+    if args[0].lower() == "/colour " and len(args) > 1:
+        s.sendall(text.encode())
+        chosen_colour = text.lower().split(" ")[1]
+        if chosen_colour in accepted_colours:
+            colour = chosen_colour
+            print("Colour accepted: {}".format(chosen_colour, colour))
+
+    else:
+        s.sendall(text.encode())
+
+
+def btn_send_clicked():
+    global username
     try:
         if keep_alive and ready:
-            text = message.get()
-            if text.strip() == "":
+            text = message.get().strip()
+            if text == "":
                 return
             if text.startswith("/"):  # local command handling
-                if text.lower().startswith("/name "):
-                    s.sendall(text.encode())
-                    username = " ".join(text.split(" ")[1:])
-                if text.lower().startswith("/colour "):
-                    s.sendall(text.encode())
-                    chosen_colour = text.lower().split(" ")[1]
-                    if chosen_colour in accepted_colours:
-                        colour = text.lower().split(" ")[1]
-                        print("Colour accepted: {}, global colour = {}".format(chosen_colour, colour))
-                else:
-                    s.sendall(text.encode())
+                handle_command_to_send(text)
             else:
                 s.sendall(text.encode())
                 add_me_to_chat_log("{}: {}".format(username, text))
@@ -110,6 +125,7 @@ port = 3033
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established", c="green")
+    print("\n\n==================================\n\tPlease use the pop-up window from this point on\n==================================\n")
     s.sendall("/name {}".format(username).encode())
 except:
     add_to_chat_log("Connection could not be made", c="red")
@@ -124,7 +140,7 @@ def handle_command_from_server(command):
         actual_message = " ".join(parts[2:])
         add_to_chat_log(actual_message, c=parts[1])
     elif type == "hand":
-        suits_to_print_in_colour = (" ".join(parts[2:])).split("\n")
+        suits_to_print_in_colour = (" ".join(parts[1:])).split("\n")
         for x, line in enumerate(suits_to_print_in_colour):
             # order ALWAYS clubs, diamonds, spades, hearts (in this game at least)
             add_to_chat_log(line, "black" if x % 2 == 0 else "red")
