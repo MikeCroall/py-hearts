@@ -32,7 +32,7 @@ class Player:
             if total_data and time.time() - begin > timeout:
                 break
 
-            elif time.time() - begin > timeout * 2:
+            elif time.time() - begin > timeout * 1.6:
                 break
 
             try:

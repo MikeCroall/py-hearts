@@ -49,6 +49,10 @@ def handle_command_to_send(text):
                 s.sendall(text.encode())
         else:
             add_to_chat_log("You must enter a desired colour!")
+
+    elif args[0].lower() == "/exit":
+        add_to_chat_log("Disconnected from server", "red")
+        s.sendall(text.encode())
     else:
         s.sendall(text.encode())
 
@@ -174,7 +178,7 @@ def recv_timeout(sock, timeout=0.3):
         if total_data and time.time() - begin > timeout:
             break
 
-        elif time.time() - begin > timeout * 2:
+        elif time.time() - begin > timeout * 1.6:
             break
 
         try:
