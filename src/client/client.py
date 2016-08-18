@@ -177,7 +177,7 @@ def recv_timeout(sock, timeout=2):
         except:
             pass
 
-    return ''.join(total_data)
+    return b''.join(total_data)
 
 
 def receive_loop():

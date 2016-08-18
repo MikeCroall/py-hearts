@@ -19,8 +19,7 @@ class Player:
             return False
 
     def said(self):
-        return self.recv_timeout()
-        #return self.conn.recv(2048).decode("utf-8")
+        return self.recv_timeout().decode("utf-8")
 
     def recv_timeout(self, timeout=2):
         self.conn.setblocking(0)
@@ -46,4 +45,4 @@ class Player:
             except:
                 pass
 
-        return ''.join(total_data)
+        return b''.join(total_data)
