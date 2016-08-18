@@ -7,7 +7,7 @@ except ImportError:
 from tkinter import *
 
 ready = False
-accepted_colours = ["white", "black", "red", "green", "blue", "cyan", "yellow", "magenta"]
+accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]
 
 # variables that should be matched on the server side
 username = "unset_username"

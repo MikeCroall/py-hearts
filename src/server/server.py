@@ -13,7 +13,7 @@ host = ""  # means can run anywhere basically
 port = 3033
 
 players = []
-accepted_colours = ["white", "black", "red", "green", "blue", "cyan", "yellow", "magenta"]  # or hex codes
+accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]  # or hex codes
 
 try:
     s.bind((host, port))
@@ -52,7 +52,7 @@ try:
 
         elif type == "help":
             player.tell(
-                "Available commands:\n/name [new name]\t- change your name\n/colour [new colour]\t- change your text colour\n/hand\t- show your current hand\n/help\t- see this message")
+                "\nAvailable commands:\n    /name [new name]    - change your name\n    /colour [new colour]    - change your text colour\n    /hand    - show your current hand\n    /help    - see this message\n")
 
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
@@ -137,7 +137,3 @@ except socket.error as ex:
     print(str(ex))
 
 s.close()
-
-# todo never use \t, replace with spaces
-# todo print new line before and after /help print out
-# todo indent each command line in /help print out
