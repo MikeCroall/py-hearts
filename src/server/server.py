@@ -27,7 +27,7 @@ try:
         args = message.split(" ")
         if len(args) == 0: return
         type = args[0]
-        if type == "/name":
+        if type == "/name" and len(args) > 1:
             original_name = player.name
             desired_name = " ".join(message.split(" ")[1:])
             if 0 < len(desired_name) <= 16:
@@ -42,16 +42,19 @@ try:
                 print("{} wants (too long) username {}".format(original_name, desired_name))
 
         elif type == "/colour":
-            colour = message.split(" ")[1].lower()
-            if not colour: return
-            if colour in accepted_colours:
-                player.colour = colour
-                print("{} set their colour to {}".format(player.name, player.colour))
-                player.tell("You have set your colour to {}".format(colour), c=colour)
-                broadcast_except_player("{} set their colour to {}".format(player.name, player.colour), player)
-                # todo check for hex codes in elif
+            if len(args) > 1:
+                colour = message.split(" ")[1].lower()
+                if not colour: return
+                if colour in accepted_colours:
+                    player.colour = colour
+                    print("{} set their colour to {}".format(player.name, player.colour))
+                    player.tell("You have set your colour to {}".format(colour), c=colour)
+                    broadcast_except_player("{} set their colour to {}".format(player.name, player.colour), player)
+                    # todo check for hex codes in elif
+                else:
+                    player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
             else:
-                player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
+                player.tell("You must enter a colour to use that command!")
 
         elif type == "/hand":
             player.tell("This command is not ready yet")
@@ -66,7 +69,7 @@ try:
 
 
     def threaded_client_handler(player):
-        conn.sendall("You have successfully connected to py-hearts!\n/help\tfor information on the commands".encode())
+        conn.sendall("You have successfully connected to py-hearts!\n/help    - for information on the commands".encode())
         while True:
             if not player.conn:
                 break  # player disconnect? probably not the way to check it

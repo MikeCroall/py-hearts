@@ -110,7 +110,7 @@ def add_me_to_chat_log(m):
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 keep_alive = True
 
-username = input("Username: ")
+username = input("Username: ").strip()
 if not username:
     add_to_chat_log("No username entered, generating username...", c="orange")
     username = "user_{}".format(str(int(time.time() * 1000))[-4:])
