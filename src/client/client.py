@@ -153,11 +153,38 @@ def handle_command_from_server(command):
         add_to_chat_log("Received unrecognised command from server /{}".format(command))
 
 
+def recv_timeout(sock, timeout=2):
+    sock.setblocking(0)
+
+    total_data = []
+    data = ""
+
+    begin = time.time()
+    while True:
+        if total_data and time.time() - begin > timeout:
+            break
+
+        elif time.time() - begin > timeout * 2:
+            break
+
+        try:
+            data = sock.recv(8192)
+            if data:
+                total_data.append(data)
+                begin = time.time()
+            else:
+                time.sleep(0.1)
+        except:
+            pass
+
+    return ''.join(total_data)
+
+
 def receive_loop():
     global keep_alive
     while keep_alive:
         try:
-            data = s.recv(1024)
+            data = recv_timeout(s)
             if not data:
                 add_to_chat_log("Disconnected from server", c="red")
                 keep_alive = False

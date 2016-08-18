@@ -20,6 +20,8 @@ try:
 
     s.listen(5)
 
+    #s.setblocking(0)
+
     print("Waiting for a connection on port {}".format(port))
 
 
