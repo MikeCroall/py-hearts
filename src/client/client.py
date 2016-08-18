@@ -30,20 +30,23 @@ def handle_command_to_send(text):
     args = text.split(" ")
     if len(args) == 0: return
 
-    if args[0].lower() == "/name" and len(args) > 1:
-        desired_username = " ".join(args[1:])
-        if 0 < len(desired_username) <= 16:
-            username = desired_username
-            s.sendall(text.encode())
+    if args[0].lower() == "/name":
+        if len(args) > 1:
+            desired_username = " ".join(args[1:])
+            if 0 < len(desired_username) <= 16:
+                username = desired_username
+                s.sendall(text.encode())
+            else:
+                add_to_chat_log("Please ensure your username is between 1 and 16 characters long!")
         else:
-            add_to_chat_log("Please ensure your username is between 1 and 16 characters long!")
+            add_to_chat_log("You must enter a desired username!")
 
-    if args[0].lower() == "/colour " and len(args) > 1:
+    elif args[0].lower() == "/colour " and len(args) > 1:
         s.sendall(text.encode())
         chosen_colour = text.lower().split(" ")[1]
         if chosen_colour in accepted_colours:
             colour = chosen_colour
-            print("Colour accepted: {}".format(chosen_colour, colour))
+            print("Colour accepted: {}".format(colour))
 
     else:
         s.sendall(text.encode())
@@ -125,7 +128,7 @@ port = 3033
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established", c="green")
-    print("\n\n==================================\n\tPlease use the pop-up window from this point on\n==================================\n")
+    print("\n\n====================================================================\n\tPlease use the pop-up window from this point on\n====================================================================\n")
     s.sendall("/name {}".format(username).encode())
 except:
     add_to_chat_log("Connection could not be made", c="red")
@@ -160,7 +163,6 @@ def receive_loop():
                 break  # if server closed
             text = data.decode("utf-8")
             if text.startswith("/"):
-                #print("Received command from server {}".format(text))  # for debugging
                 handle_command_from_server(text[1:])  # removes /
             else:
                 add_to_chat_log(data.decode("utf-8"))
