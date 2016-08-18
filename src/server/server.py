@@ -71,17 +71,22 @@ try:
     def threaded_client_handler(player):
         conn.sendall("You have successfully connected to py-hearts!\n/help    - for information on the commands".encode())
         while True:
-            if not player.conn:
-                break  # player disconnect? probably not the way to check it
-            message = player.said()
-            if not message or message == "/exit":
-                break  # player definitely disconnected
-            if message.startswith("/"):
-                # command other than exit
-                handle_command_from_player(message, player)
-            else:
-                print(player.name + ": " + message)
-                broadcast_except_player(player.name + ": " + message, player)
+            try:
+                if not player.conn:
+                    break  # player disconnect? probably not the way to check it
+                message = player.said()
+                if not message or message == "/exit":
+                    break  # player definitely disconnected
+                if message.startswith("/"):
+                    # command other than exit
+                    handle_command_from_player(message, player)
+                else:
+                    print(player.name + ": " + message)
+                    broadcast_except_player(player.name + ": " + message, player)
+            except Exception as ex:
+                print("Error in {}'s thread".format(player.name))
+                # maybe break here?
+                raise
         conn.close()
         try:
             players.remove(player)
