@@ -77,7 +77,8 @@ try:
                 if not player.conn:
                     break  # player disconnect? probably not the way to check it
                 message = player.said()
-                if not message or message == "/exit":
+                if not message: continue
+                if message == "/exit":
                     break  # player definitely disconnected
                 if message.startswith("/"):
                     # command other than exit

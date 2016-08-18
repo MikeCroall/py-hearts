@@ -1,10 +1,11 @@
 import socket, time
+from tkinter import *
+from tkinter import messagebox
 
 try:
     from _thread import *
 except ImportError:
     print("Please ensure you are using Python 3+\nWe must import _thread")
-from tkinter import *
 
 ready = False
 accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]
@@ -69,6 +70,15 @@ def btn_send_clicked():
         print("Something went wrong sending that message!")
         print(ex)
         raise
+
+
+def on_closing():
+    if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
+        s.sendall("/exit".encode())
+        root.destroy()
+
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 
 
 root.wm_title("py-hearts client - by Mike Croall")
@@ -153,7 +163,7 @@ def handle_command_from_server(command):
         add_to_chat_log("Received unrecognised command from server /{}".format(command))
 
 
-def recv_timeout(sock, timeout=2):
+def recv_timeout(sock, timeout=0.3):
     sock.setblocking(0)
 
     total_data = []
@@ -168,7 +178,7 @@ def recv_timeout(sock, timeout=2):
             break
 
         try:
-            data = sock.recv(8192)
+            data = sock.recv(4096)
             if data:
                 total_data.append(data)
                 begin = time.time()
@@ -185,10 +195,7 @@ def receive_loop():
     while keep_alive:
         try:
             data = recv_timeout(s)
-            if not data:
-                add_to_chat_log("Disconnected from server", c="red")
-                keep_alive = False
-                break  # if server closed
+            if not data: continue
             text = data.decode("utf-8")
             if text.startswith("/"):
                 handle_command_from_server(text[1:])  # removes /

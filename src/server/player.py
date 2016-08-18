@@ -21,7 +21,7 @@ class Player:
     def said(self):
         return self.recv_timeout().decode("utf-8")
 
-    def recv_timeout(self, timeout=2):
+    def recv_timeout(self, timeout=0.3):
         self.conn.setblocking(0)
 
         total_data = []
@@ -36,7 +36,7 @@ class Player:
                 break
 
             try:
-                data = self.conn.recv(8192)
+                data = self.conn.recv(4096)
                 if data:
                     total_data.append(data)
                     begin = time.time()
