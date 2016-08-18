@@ -26,7 +26,6 @@ def enter_from_box(event):
 def handle_command_to_send(text):
     global username
     global colour
-
     args = text.split(" ")
     if len(args) == 0: return
 
@@ -41,13 +40,14 @@ def handle_command_to_send(text):
         else:
             add_to_chat_log("You must enter a desired username!")
 
-    elif args[0].lower() == "/colour " and len(args) > 1:
-        s.sendall(text.encode())
-        chosen_colour = text.lower().split(" ")[1]
-        if chosen_colour in accepted_colours:
-            colour = chosen_colour
-            print("Colour accepted: {}".format(colour))
-
+    elif args[0].lower() == "/colour":
+        if len(args) > 1:
+            chosen_colour = args[1].lower()
+            if chosen_colour in accepted_colours:
+                colour = chosen_colour
+                s.sendall(text.encode())
+        else:
+            add_to_chat_log("You must enter a desired colour!")
     else:
         s.sendall(text.encode())
 
@@ -114,8 +114,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 keep_alive = True
 
 username = input("Username: ").strip()
-if not username:
-    add_to_chat_log("No username entered, generating username...", c="orange")
+if not username or len(username) > 16:
+    add_to_chat_log("Invalid username entered, generating username...", c="orange")
     username = "user_{}".format(str(int(time.time() * 1000))[-4:])
 
 server = input("Server IP: ")  # for testing on localhost use 127.0.0.1
@@ -128,7 +128,8 @@ port = 3033
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established", c="green")
-    print("\n\n====================================================================\n\tPlease use the pop-up window from this point on\n====================================================================\n")
+    print(
+        "\n\n====================================================================\n\tPlease use the pop-up window from this point on\n====================================================================\n")
     s.sendall("/name {}".format(username).encode())
 except:
     add_to_chat_log("Connection could not be made", c="red")
