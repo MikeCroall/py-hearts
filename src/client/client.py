@@ -59,6 +59,8 @@ def handle_command_to_send(text):
 
     elif args[0].lower() == "/exit":
         add_to_chat_log("Disconnected from server", c="red")
+        global keep_alive
+        keep_alive = False
         send("/exit")
     else:
         send(text)

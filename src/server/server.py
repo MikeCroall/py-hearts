@@ -113,8 +113,7 @@ try:
         start_new_thread(receive_loop, (player,))
 
         # below is parse loop
-        conn.sendall(
-            "You have successfully connected to py-hearts!\n/help    - for information on the commands".encode())
+        player.tell("You have successfully connected to py-hearts!\n/help    - for information on the commands")
         while player.keep_alive:
             try:
                 if not player.conn: break  # player disconnect? probably not the way to check it
@@ -131,7 +130,7 @@ try:
                 print("Error in {}'s thread".format(player.name))
                 # maybe break here?
                 raise
-        conn.close()
+        player.conn.close()
         try:
             players.remove(player)
         except:
