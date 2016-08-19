@@ -20,6 +20,12 @@ root.withdraw()
 message = StringVar()
 
 
+def send(m):
+    global s
+    m += chr(23)  # include EOT char
+    s.sendall(m.encode())
+
+
 # gui
 def enter_from_box(event):
     btn_send_clicked()
@@ -36,26 +42,26 @@ def handle_command_to_send(text):
             desired_username = " ".join(args[1:])
             if 0 < len(desired_username) <= 16:
                 username = desired_username
-                s.sendall(text.encode())
+                send(text)
             else:
                 add_to_chat_log("Please ensure your username is between 1 and 16 characters long!")
         else:
-            add_to_chat_log("You must enter a desired username!")
+            add_to_chat_log("You must enter a desired username!", c="orange")
 
     elif args[0].lower() == "/colour":
         if len(args) > 1:
             chosen_colour = args[1].lower()
             if chosen_colour in accepted_colours:
                 colour = chosen_colour
-                s.sendall(text.encode())
+                send(text)
         else:
-            add_to_chat_log("You must enter a desired colour!")
+            add_to_chat_log("You must enter a desired colour!", c="orange")
 
     elif args[0].lower() == "/exit":
-        add_to_chat_log("Disconnected from server", "red")
-        s.sendall(text.encode())
+        add_to_chat_log("Disconnected from server", c="red")
+        send("/exit")
     else:
-        s.sendall(text.encode())
+        send(text)
 
 
 def btn_send_clicked():
@@ -68,7 +74,7 @@ def btn_send_clicked():
             if text.startswith("/"):  # local command handling
                 handle_command_to_send(text)
             else:
-                s.sendall(text.encode())
+                send(text)
                 add_me_to_chat_log("{}: {}".format(username, text))
             message.set("")
     except Exception as ex:
@@ -79,13 +85,11 @@ def btn_send_clicked():
 
 def on_closing():
     if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
-        s.sendall("/exit".encode())
+        send("/exit")
         root.destroy()
 
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
-
-
 root.wm_title("py-hearts client - by Mike Croall")
 root.bind('<Return>', enter_from_box)
 
@@ -133,7 +137,7 @@ if not username or len(username) > 16:
     add_to_chat_log("Invalid username entered, generating username...", c="orange")
     username = "user_{}".format(str(int(time.time() * 1000))[-4:])
 
-server = input("Server IP: ")  # for testing on localhost use 127.0.0.1
+server = input("Server IP: ").strip()  # for testing on localhost use 127.0.0.1
 if not server:
     server = "127.0.0.1"
     add_to_chat_log("No server entered, defaulting to 127.0.0.1", c="orange")
@@ -143,9 +147,8 @@ port = 3033
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established", c="green")
-    print(
-        "\n\n====================================================================\n\tPlease use the pop-up window from this point on\n====================================================================\n")
-    s.sendall("/name {}".format(username).encode())
+    print("\n" + "="*68 + "\n\tPlease use the pop-up window from this point on\n" + "="*68 + "\n")
+    send("/name {}".format(username))
 except:
     add_to_chat_log("Connection could not be made", c="red")
     keep_alive = False
@@ -153,13 +156,13 @@ except:
 
 def handle_command_from_server(command):
     # slash has already been removed
-    parts = command.split(" ")
-    type = parts[0].lower()
-    if type == "colour":
-        actual_message = " ".join(parts[2:])
-        add_to_chat_log(actual_message, c=parts[1])
-    elif type == "hand":
-        suits_to_print_in_colour = (" ".join(parts[1:])).split("\n")
+    args = command.split(" ")
+    command_type = args[0].lower()
+    if command_type == "colour":
+        actual_message = " ".join(args[2:])
+        add_to_chat_log(actual_message, c=args[1])
+    elif command_type == "hand":
+        suits_to_print_in_colour = (" ".join(args[1:])).split("\n")
         for x, line in enumerate(suits_to_print_in_colour):
             # order ALWAYS clubs, diamonds, spades, hearts (in this game at least)
             add_to_chat_log(line, "black" if x % 2 == 0 else "red")
@@ -173,6 +176,9 @@ def receive_loop():
     while keep_alive:
         try:
             data = s.recv(4096)
+            if not data:  # server disconnected if blocking call returns empty byte string
+                add_to_chat_log("Disconnected from server", c="red")
+                keep_alive = False
             receive_buffer += data
         except socket.error as ex:
             keep_alive = False
@@ -203,13 +209,12 @@ def parse_loop():
     global keep_alive
     while keep_alive:
         try:
-            data = get_next_message()
-            if not data: continue
-            text = data.decode("utf-8")
+            text = get_next_message()  # returns decoded string
+            if not text: continue
             if text.startswith("/"):
                 handle_command_from_server(text[1:])  # removes /
             else:
-                add_to_chat_log(data.decode("utf-8"))
+                add_to_chat_log(text)
         except socket.error as ex:
             keep_alive = False
             add_to_chat_log("Socket error {}".format(str(ex)), c="red")
@@ -219,6 +224,7 @@ def parse_loop():
 
 start_new_thread(receive_loop, ())
 start_new_thread(parse_loop, ())
+
 
 ready = True
 
@@ -232,5 +238,3 @@ if __name__ == "__main__":
         raise
 
 s.close()
-  # todo client send messages through a method which add EOT and encode
-  # todo ensure decoding is done at optimal point
