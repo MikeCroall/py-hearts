@@ -9,6 +9,7 @@ except ImportError:
 
 ready = False
 accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]
+receive_buffer =  b""
 
 # variables that should be matched on the server side
 username = "unset_username"
@@ -167,38 +168,42 @@ def handle_command_from_server(command):
         add_to_chat_log("Received unrecognised command from server /{}".format(command))
 
 
-def recv_timeout(sock, timeout=0.3):
-    sock.setblocking(0)
-
-    total_data = []
-    data = ""
-
-    begin = time.time()
-    while True:
-        if total_data and time.time() - begin > timeout:
-            break
-
-        elif time.time() - begin > timeout * 1.6:
-            break
-
-        try:
-            data = sock.recv(4096)
-            if data:
-                total_data.append(data)
-                begin = time.time()
-            else:
-                time.sleep(0.1)
-        except:
-            pass
-
-    return b''.join(total_data)
-
-
 def receive_loop():
+    global keep_alive, receive_buffer
+    while keep_alive:
+        try:
+            data = s.recv(4096)
+            receive_buffer += data
+        except socket.error as ex:
+            keep_alive = False
+            add_to_chat_log("Socket error {}".format(str(ex)), c="red")
+
+
+def get_next_message():
+    global keep_alive, receive_buffer
+    end_of_transmission = chr(23)  # end of transmission char
+    decoded = receive_buffer.decode("utf-8")
+    while keep_alive:
+        while end_of_transmission not in decoded:
+            time.sleep(0.1)
+            decoded = receive_buffer.decode("utf-8")
+            # no full transmission yet, loop to check again
+        # now something new to check
+        if end_of_transmission in decoded:  # double check to avoid failures
+            first_cut_off = decoded.index(end_of_transmission)
+            to_parse = decoded[:first_cut_off]  # excluding EOT char
+            if len(decoded) > len(to_parse) + 2:  # replace buffer with subbuffer from first_cut_off + 1
+                receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
+            return to_parse
+        else:
+            return "Error: EOT not found in get_next_message after loop break"
+
+
+def parse_loop():
     global keep_alive
     while keep_alive:
         try:
-            data = recv_timeout(s)
+            data = get_next_message()
             if not data: continue
             text = data.decode("utf-8")
             if text.startswith("/"):
@@ -213,6 +218,7 @@ def receive_loop():
 
 
 start_new_thread(receive_loop, ())
+start_new_thread(parse_loop, ())
 
 ready = True
 

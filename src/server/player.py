@@ -46,3 +46,5 @@ class Player:
                 pass
 
         return b''.join(total_data)
+        # the ONLY upside to this method is longer messages supported (it's slow and buggy)
+        # todo CHANGE IT
