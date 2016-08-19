@@ -232,3 +232,5 @@ if __name__ == "__main__":
         raise
 
 s.close()
+  # todo client send messages through a method which add EOT and encode
+  # todo ensure decoding is done at optimal point
