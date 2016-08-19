@@ -139,7 +139,7 @@ try:
             players.remove(player)
         except:
             pass
-        print("{} disconnected".format(player.name))
+        print("{} disconnected".format(player.name))  # todo look into double disconnect print out when client quits with the x button
         broadcast("{} disconnected".format(player.name))
 
 
