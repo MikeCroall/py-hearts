@@ -1,5 +1,7 @@
 import socket
 
+import time
+
 try:
     from _thread import *
 except ImportError:
@@ -20,16 +22,15 @@ try:
 
     s.listen(5)
 
-    #s.setblocking(0)
-
     print("Waiting for a connection on port {}".format(port))
 
 
     def handle_command_from_player(message, player):
+        # slash has already been removed
         args = message.split(" ")
         if len(args) == 0: return
         type = args[0]
-        if type == "/name" and len(args) > 1:
+        if type == "name" and len(args) > 1:
             original_name = player.name
             desired_name = " ".join(message.split(" ")[1:])
             if 0 < len(desired_name) <= 16:
@@ -43,7 +44,7 @@ try:
             else:
                 print("{} wants (too long) username {}".format(original_name, desired_name))
 
-        elif type == "/colour":
+        elif type == "colour":
             if len(args) > 1:
                 colour = message.split(" ")[1].lower()
                 if not colour: return
@@ -54,35 +55,76 @@ try:
                     broadcast_except_player("{} set their colour to {}".format(player.name, player.colour), player)
                     # todo check for hex codes in elif
                 else:
-                    player.tell("{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
+                    player.tell(
+                        "{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
             else:
                 player.tell("You must enter a colour to use that command!")
 
-        elif type == "/hand":
-            player.tell("This command is not ready yet")
+        elif type == "hand":
+            player.tell("/colour red This command is not ready yet")
 
-        elif type == "/help":
+        elif type == "help":
             player.tell(
-                "\nAvailable commands:\n    /name [new name]    - change your name\n    /colour [new colour]    - change your text colour\n    /hand    - show your current hand\n    /help    - see this message\n")
+                "\nAvailable commands:" +
+                "\n    /name [new name]    - change your name" +
+                "\n    /colour [new colour]    - change your text colour" +
+                "\n    /hand    - show your current hand\n    /help    - see this message\n")
 
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
             player.tell("You have attempted an unrecognised command")
 
 
-    def threaded_client_handler(player):
-        conn.sendall("You have successfully connected to py-hearts!\n/help    - for information on the commands".encode())
-        while True:
+    def get_next_message(p):
+        end_of_transmission = chr(23)  # end of transmission char
+        decoded = p.receive_buffer.decode("utf-8")
+        while p.keep_alive:
+            while end_of_transmission not in decoded:
+                time.sleep(0.1)
+                decoded = p.receive_buffer.decode("utf-8")
+                # no full transmission yet, loop to check again
+            # now something new to check
+            if end_of_transmission in decoded:  # double check to avoid failures
+                first_cut_off = decoded.index(end_of_transmission)
+                to_parse = decoded[:first_cut_off]  # excluding EOT char
+                if len(decoded) > len(to_parse) + 2:  # replace buffer with subbuffer from first_cut_off + 1
+                    p.receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
+                return to_parse
+            else:
+                return "Error: EOT not found in get_next_message after loop break"
+
+
+    def receive_loop(p):
+        while p.keep_alive:
             try:
-                if not player.conn:
-                    break  # player disconnect? probably not the way to check it
-                message = player.said()
+                data = p.conn.recv(4096)
+                if not data:  # player disconnected if blocking call returns empty byte string
+                    print("{} disconnected from server".format(p.name))
+                    p.keep_alive = False
+                p.receive_buffer += data
+            except socket.error as ex:
+                p.keep_alive = False
+                print("Socket error {}".format(str(ex)))
+
+
+    def client_handler_main(player):
+        player.receive_buffer = b""
+        player.keep_alive = True
+
+        start_new_thread(receive_loop, (player,))
+
+        # below is parse loop
+        conn.sendall(
+            "You have successfully connected to py-hearts!\n/help    - for information on the commands".encode())
+        while player.keep_alive:
+            try:
+                if not player.conn: break  # player disconnect? probably not the way to check it
+                message = get_next_message(player)
                 if not message: continue
-                if message == "/exit":
-                    break  # player definitely disconnected
+                if message == "/exit": player.keep_alive = False; break  # player definitely disconnected
                 if message.startswith("/"):
                     # command other than exit
-                    handle_command_from_player(message, player)
+                    handle_command_from_player(message[1:], player)
                 else:
                     print(player.name + ": " + message)
                     broadcast_except_player(player.name + ": " + message, player)
@@ -105,6 +147,7 @@ try:
             if not player.tell(message):
                 failed.append(player)
         for p in failed:
+            p.keep_alive = False
             try:
                 players.remove(p)
             except:
@@ -119,6 +162,7 @@ try:
                 if not player.tell(message, not_this_player.colour):
                     failed.append(player)
         for p in failed:
+            p.keep_alive = False
             try:
                 players.remove(p)
             except:
@@ -141,7 +185,7 @@ try:
             p = Player(name, conn)
             players.append(p)
 
-            start_new_thread(threaded_client_handler, (p,))
+            start_new_thread(client_handler_main, (p,))
 
         except KeyboardInterrupt as user_cancelled:
             print("\rExiting...")

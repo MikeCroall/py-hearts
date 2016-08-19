@@ -1,6 +1,5 @@
 import time
 
-
 class Player:
     def __init__(self, name, conn, colour="black"):
         self.name = name
@@ -9,6 +8,7 @@ class Player:
 
     def tell(self, message, c="black"):
         try:
+            message += chr(23)  # include EOT char
             if not c or c == "black":
                 self.conn.sendall(message.encode())
             else:
@@ -17,34 +17,3 @@ class Player:
         except:
             print("{}'s connection is failing".format(self.name))
             return False
-
-    def said(self):
-        return self.recv_timeout().decode("utf-8")
-
-    def recv_timeout(self, timeout=0.3):
-        self.conn.setblocking(0)
-
-        total_data = []
-        data = ""
-
-        begin = time.time()
-        while True:
-            if total_data and time.time() - begin > timeout:
-                break
-
-            elif time.time() - begin > timeout * 1.6:
-                break
-
-            try:
-                data = self.conn.recv(4096)
-                if data:
-                    total_data.append(data)
-                    begin = time.time()
-                else:
-                    time.sleep(0.1)
-            except:
-                pass
-
-        return b''.join(total_data)
-        # the ONLY upside to this method is longer messages supported (it's slow and buggy)
-        # todo CHANGE IT
