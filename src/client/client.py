@@ -9,7 +9,7 @@ except ImportError:
 
 ready = False
 accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]
-receive_buffer =  b""
+receive_buffer = b""
 
 # variables that should be matched on the server side
 username = "unset_username"
@@ -147,7 +147,7 @@ port = 3033
 try:
     s.connect((server, port))
     add_to_chat_log("Connection established", c="green")
-    print("\n" + "="*68 + "\n\tPlease use the pop-up window from this point on\n" + "="*68 + "\n")
+    print("\n" + "=" * 68 + "\n\tPlease use the pop-up window from this point on\n" + "=" * 68 + "\n")
     send("/name {}".format(username))
 except:
     add_to_chat_log("Connection could not be made", c="red")
@@ -198,8 +198,7 @@ def get_next_message():
         if end_of_transmission in decoded:  # double check to avoid failures
             first_cut_off = decoded.index(end_of_transmission)
             to_parse = decoded[:first_cut_off]  # excluding EOT char
-            if len(decoded) > len(to_parse) + 2:  # replace buffer with subbuffer from first_cut_off + 1
-                receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
+            receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
             return to_parse
         else:
             return "Error: EOT not found in get_next_message after loop break"
@@ -224,7 +223,6 @@ def parse_loop():
 
 start_new_thread(receive_loop, ())
 start_new_thread(parse_loop, ())
-
 
 ready = True
 

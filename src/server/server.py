@@ -87,8 +87,7 @@ try:
             if end_of_transmission in decoded:  # double check to avoid failures
                 first_cut_off = decoded.index(end_of_transmission)
                 to_parse = decoded[:first_cut_off]  # excluding EOT char
-                if len(decoded) > len(to_parse) + 2:  # replace buffer with subbuffer from first_cut_off + 1
-                    p.receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
+                p.receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
                 return to_parse
             else:
                 return "Error: EOT not found in get_next_message after loop break"
