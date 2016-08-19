@@ -37,12 +37,13 @@ try:
                 player.name = desired_name
                 print("{} changed their username to {}".format(original_name, player.name))
                 connected = connected_players()
-                player.tell("You have set your username to {}\nCurrently connected: {}".format(
-                    player.name, connected))
+                player.tell("You have set your username to {}\nCurrently connected ({}): {}".format(
+                    player.name, len(players), connected))
                 broadcast_except_player("{} set their username to {}\nCurrently connected ({}): {}".format(
                     original_name, player.name, len(players), connected), player)
             else:
                 print("{} wants (too long) username {}".format(original_name, desired_name))
+                # todo maybe - player.tell("Usernames must be between 1 and 16 characters long!")
 
         elif type == "colour":
             if len(args) > 1:
@@ -68,11 +69,14 @@ try:
                 "\nAvailable commands:" +
                 "\n    /name [new name]    - change your name" +
                 "\n    /colour [new colour]    - change your text colour" +
-                "\n    /hand    - show your current hand\n    /help    - see this message\n")
+                "\n    /hand    - show your current hand" +
+                "\n    /help    - see this message" +
+                "\n\n    /exit    - disconnect and close the application" +
+                "\n")
 
         else:
             print("{} attempted unrecognised command {}".format(player.name, message))
-            player.tell("You have attempted an unrecognised command")
+            player.tell("You have attempted an unrecognised command: {}".format(message))
 
 
     def get_next_message(p):

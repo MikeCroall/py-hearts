@@ -62,8 +62,20 @@ def handle_command_to_send(text):
         global keep_alive
         keep_alive = False
         send("/exit")
+        start_new_thread(close_countdown, ())
     else:
         send(text)
+
+
+def close_countdown():
+    global root
+    add_to_chat_log("Auto-closing in 3...", c="red")
+    time.sleep(1)
+    add_to_chat_log("2...", c="red")
+    time.sleep(1)
+    add_to_chat_log("1...", c="red")
+    time.sleep(1)
+    root.destroy()
 
 
 def btn_send_clicked():
@@ -181,6 +193,7 @@ def receive_loop():
             if not data:  # server disconnected if blocking call returns empty byte string
                 add_to_chat_log("Disconnected from server", c="red")
                 keep_alive = False
+                start_new_thread(close_countdown, ())
             receive_buffer += data
         except socket.error as ex:
             keep_alive = False
@@ -211,7 +224,7 @@ def parse_loop():
     while keep_alive:
         try:
             text = get_next_message()  # returns decoded string
-            if not text: continue
+            if not text: break
             if text.startswith("/"):
                 handle_command_from_server(text[1:])  # removes /
             else:
@@ -219,8 +232,6 @@ def parse_loop():
         except socket.error as ex:
             keep_alive = False
             add_to_chat_log("Socket error {}".format(str(ex)), c="red")
-    time.sleep(1)
-    root.destroy()
 
 
 start_new_thread(receive_loop, ())
