@@ -51,6 +51,8 @@ def handle_command_to_send(text):
             if chosen_colour in accepted_colours:
                 colour = chosen_colour
                 send(text)
+            else:
+                add_to_chat_log("That colour is not recognised!", c="orange")
         else:
             add_to_chat_log("You must enter a desired colour!", c="orange")
 
