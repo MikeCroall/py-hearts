@@ -116,6 +116,7 @@ try:
         player.buffer_lock = threading.Lock()
 
         rec_thread = threading.Thread(target=receive_loop, args=(player,))
+        rec_thread.setDaemon(True)
         rec_thread.start()
 
         # below is parse loop
@@ -189,6 +190,7 @@ try:
             players.append(p)
 
             cli_thread = threading.Thread(target=client_handler_main, args=(p,))
+            cli_thread.setDaemon(True)
             cli_thread.start()
 
         except KeyboardInterrupt as user_cancelled:
