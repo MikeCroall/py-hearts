@@ -67,7 +67,7 @@ try:
                 "\n    /colour [new colour]    - change your text colour" +
                 "\n    /hand    - show your current hand" +
                 "\n    /help    - see this message" +
-                "\n\n    /exit    - disconnect and close the application" +
+                "\n    /exit    - disconnect and close the application" +
                 "\n")
 
         else:
