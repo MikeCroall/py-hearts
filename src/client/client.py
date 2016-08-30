@@ -4,7 +4,7 @@ from tkinter import messagebox
 import threading
 
 ready = False
-accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]
+accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta", "orange"]
 receive_buffer = b""
 buffer_lock = threading.Lock()
 

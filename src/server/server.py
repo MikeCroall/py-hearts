@@ -11,7 +11,7 @@ host = ""  # means can run anywhere basically
 port = 3033
 
 players = []
-accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]  # or hex codes
+accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta", "orange"]  # or hex codes
 
 try:
     s.bind((host, port))
