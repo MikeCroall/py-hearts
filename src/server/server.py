@@ -101,7 +101,7 @@ try:
             try:
                 data = p.conn.recv(4096)
                 if not data:  # player disconnected if blocking call returns empty byte string
-                    print("{} disconnected from server".format(p.name))
+                    # print("{} disconnected from server".format(p.name))
                     p.keep_alive = False
                 with p.buffer_lock:
                     p.receive_buffer += data
@@ -142,8 +142,8 @@ try:
             players.remove(player)
         except:
             pass
-        print("{} disconnected".format(player.name))  # todo look into double disconnect print out when client quits with the x button
-        broadcast("{} disconnected".format(player.name))
+        print("{} disconnected from server".format(player.name))
+        broadcast("{} disconnected from server".format(player.name))
 
 
     def broadcast(message):
