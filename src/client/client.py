@@ -1,15 +1,12 @@
 import socket, time
 from tkinter import *
 from tkinter import messagebox
-
-try:
-    from _thread import *
-except ImportError:
-    print("Please ensure you are using Python 3+\nWe must import _thread")
+import threading
 
 ready = False
 accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta"]
 receive_buffer = b""
+buffer_lock = threading.Lock()
 
 # variables that should be matched on the server side
 username = "unset_username"
@@ -62,7 +59,8 @@ def handle_command_to_send(text):
         global keep_alive
         keep_alive = False
         send("/exit")
-        start_new_thread(close_countdown, ())
+        close_thread = threading.Thread(target=close_countdown, args=())
+        close_thread.start()
     else:
         send(text)
 
@@ -186,34 +184,38 @@ def handle_command_from_server(command):
 
 
 def receive_loop():
-    global keep_alive, receive_buffer
+    global keep_alive, receive_buffer, buffer_lock
     while keep_alive:
         try:
             data = s.recv(4096)
             if not data:  # server disconnected if blocking call returns empty byte string
                 add_to_chat_log("Disconnected from server", c="red")
                 keep_alive = False
-                start_new_thread(close_countdown, ())
-            receive_buffer += data
+                close_thread = threading.Thread(target=close_countdown, args=())
+                close_thread.start()
+            with buffer_lock:
+                receive_buffer += data
         except socket.error as ex:
             keep_alive = False
             add_to_chat_log("Socket error {}".format(str(ex)), c="red")
 
 
 def get_next_message():
-    global keep_alive, receive_buffer
+    global keep_alive, receive_buffer, buffer_lock
     end_of_transmission = chr(23)  # end of transmission char
     decoded = receive_buffer.decode("utf-8")
     while keep_alive:
         while end_of_transmission not in decoded:
             time.sleep(0.1)
-            decoded = receive_buffer.decode("utf-8")
+            with buffer_lock:
+                decoded = receive_buffer.decode("utf-8")
             # no full transmission yet, loop to check again
         # now something new to check
         if end_of_transmission in decoded:  # double check to avoid failures
             first_cut_off = decoded.index(end_of_transmission)
             to_parse = decoded[:first_cut_off]  # excluding EOT char
-            receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
+            with buffer_lock:
+                receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
             return to_parse
         else:
             return "Error: EOT not found in get_next_message after loop break"
@@ -234,8 +236,10 @@ def parse_loop():
             add_to_chat_log("Socket error {}".format(str(ex)), c="red")
 
 
-start_new_thread(receive_loop, ())
-start_new_thread(parse_loop, ())
+rec_thread = threading.Thread(target=receive_loop, args=())
+par_thread = threading.Thread(target=parse_loop, args=())
+rec_thread.start()
+par_thread.start()
 
 ready = True
 

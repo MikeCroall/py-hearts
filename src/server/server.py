@@ -1,11 +1,7 @@
 import socket
-
 import time
+import threading
 
-try:
-    from _thread import *
-except ImportError:
-    print("Please ensure you are using Python 3+\nWe must import _thread")
 from player import Player
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,6 +26,7 @@ try:
         args = message.split(" ")
         if len(args) == 0: return
         type = args[0]
+
         if type == "name" and len(args) > 1:
             original_name = player.name
             desired_name = " ".join(message.split(" ")[1:])
@@ -43,7 +40,6 @@ try:
                     original_name, player.name, len(players), connected), player)
             else:
                 print("{} wants (too long) username {}".format(original_name, desired_name))
-                # todo maybe - player.tell("Usernames must be between 1 and 16 characters long!")
 
         elif type == "colour":
             if len(args) > 1:
@@ -81,17 +77,20 @@ try:
 
     def get_next_message(p):
         end_of_transmission = chr(23)  # end of transmission char
-        decoded = p.receive_buffer.decode("utf-8")
+        with p.buffer_lock:
+            decoded = p.receive_buffer.decode("utf-8")
         while p.keep_alive:
             while end_of_transmission not in decoded:
                 time.sleep(0.1)
-                decoded = p.receive_buffer.decode("utf-8")
+                with p.buffer_lock:
+                    decoded = p.receive_buffer.decode("utf-8")
                 # no full transmission yet, loop to check again
             # now something new to check
             if end_of_transmission in decoded:  # double check to avoid failures
                 first_cut_off = decoded.index(end_of_transmission)
                 to_parse = decoded[:first_cut_off]  # excluding EOT char
-                p.receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
+                with p.buffer_lock:
+                    p.receive_buffer = decoded[first_cut_off + 1:].encode()  # excluding EOT char
                 return to_parse
             else:
                 return "Error: EOT not found in get_next_message after loop break"
@@ -104,7 +103,8 @@ try:
                 if not data:  # player disconnected if blocking call returns empty byte string
                     print("{} disconnected from server".format(p.name))
                     p.keep_alive = False
-                p.receive_buffer += data
+                with p.buffer_lock:
+                    p.receive_buffer += data
             except socket.error as ex:
                 p.keep_alive = False
                 print("Socket error {}".format(str(ex)))
@@ -113,8 +113,10 @@ try:
     def client_handler_main(player):
         player.receive_buffer = b""
         player.keep_alive = True
+        player.buffer_lock = threading.Lock()
 
-        start_new_thread(receive_loop, (player,))
+        rec_thread = threading.Thread(target=receive_loop, args=(player,))
+        rec_thread.start()
 
         # below is parse loop
         player.tell("You have successfully connected to py-hearts!\n/help    - for information on the commands")
@@ -172,8 +174,7 @@ try:
         for p in failed: broadcast("{} disconnected".format(p.name))
 
 
-    def connected_players():
-        return ', '.join([p.name for p in players])
+    def connected_players(): return ', '.join([p.name for p in players])
 
 
     while True:
@@ -187,7 +188,8 @@ try:
             p = Player(name, conn)
             players.append(p)
 
-            start_new_thread(client_handler_main, (p,))
+            cli_thread = threading.Thread(target=client_handler_main, args=(p,))
+            cli_thread.start()
 
         except KeyboardInterrupt as user_cancelled:
             print("\rExiting...")
