@@ -60,6 +60,7 @@ def handle_command_to_send(text):
         keep_alive = False
         send("/exit")
         close_thread = threading.Thread(target=close_countdown, args=())
+        close_thread.setDaemon(True)
         close_thread.start()
     else:
         send(text)
@@ -74,6 +75,7 @@ def close_countdown():
     add_to_chat_log("1...", c="red")
     time.sleep(1)
     root.destroy()
+    sys.exit(0)  # ensure program closes, as lock blocking may prevent this
 
 
 def btn_send_clicked():
@@ -192,6 +194,7 @@ def receive_loop():
                 add_to_chat_log("Disconnected from server", c="red")
                 keep_alive = False
                 close_thread = threading.Thread(target=close_countdown, args=())
+                close_thread.setDaemon(True)
                 close_thread.start()
             with buffer_lock:
                 receive_buffer += data
@@ -238,6 +241,8 @@ def parse_loop():
 
 rec_thread = threading.Thread(target=receive_loop, args=())
 par_thread = threading.Thread(target=parse_loop, args=())
+rec_thread.setDaemon(True)
+par_thread.setDaemon(True)
 rec_thread.start()
 par_thread.start()
 
