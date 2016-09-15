@@ -11,8 +11,8 @@ host = ""  # means can run anywhere basically
 port = 3033
 
 players = []
-accepted_colours = ['aquamarine', 'azure', 'blue', 'coral', 'cyan', 'gold', 'goldenrod', 'khaki', 'lavender', 'maroon',
-                    'navy', 'orange', 'pink', 'purple', 'red', 'salmon', 'thistle', 'tomato', 'turquoise', 'yellow']
+accepted_colours = ['aquamarine', 'blue', 'coral', 'cyan', 'gold', 'goldenrod', 'khaki', 'maroon',
+                    'navy', 'orange', 'pink', 'purple', 'red', 'salmon', 'thistle', 'tomato', 'turquoise']
 
 try:
     s.bind((host, port))
@@ -59,7 +59,7 @@ try:
                 player.tell("You must enter a colour to use that command!")
 
         elif type == "colours":
-            colour_string = ",".join(accepted_colours)
+            colour_string = ", ".join(accepted_colours)
             player.tell("Colours: {}".format(colour_string))
 
         elif type == "hand":

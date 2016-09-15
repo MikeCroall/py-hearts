@@ -4,8 +4,8 @@ from tkinter import messagebox
 import threading
 
 ready = False
-accepted_colours = ['aquamarine', 'azure', 'blue', 'coral', 'cyan', 'gold', 'goldenrod', 'khaki', 'lavender', 'maroon',
-                    'navy', 'orange', 'pink', 'purple', 'red', 'salmon', 'thistle', 'tomato', 'turquoise', 'yellow']
+accepted_colours = ['aquamarine', 'blue', 'coral', 'cyan', 'gold', 'goldenrod', 'khaki', 'maroon',
+                    'navy', 'orange', 'pink', 'purple', 'red', 'salmon', 'thistle', 'tomato', 'turquoise']
 receive_buffer = b""
 buffer_lock = threading.Lock()
 
