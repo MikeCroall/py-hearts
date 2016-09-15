@@ -59,8 +59,9 @@ try:
                 player.tell("You must enter a colour to use that command!")
 
         elif type == "colours":
-            colour_string = "\n\t".join(["/colour {0} {0}".format(c) for c in accepted_colours])
-            player.tell("Colours:\n{}".format(colour_string))
+            colour_strings = ["/colour {0} {0}".format(c) for c in accepted_colours]
+            player.tell("Colours:\n")
+            for cs in colour_strings: player.tell(cs)
 
         elif type == "hand":
             player.tell("/colour red This command is not ready yet")
