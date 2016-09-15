@@ -11,7 +11,8 @@ host = ""  # means can run anywhere basically
 port = 3033
 
 players = []
-accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta", "orange"]  # or hex codes
+accepted_colours = ['aquamarine', 'azure', 'blue', 'coral', 'cyan', 'gold', 'goldenrod', 'khaki', 'lavender', 'maroon',
+                    'navy', 'orange', 'pink', 'purple', 'red', 'salmon', 'thistle', 'tomato', 'turquoise', 'yellow']
 
 try:
     s.bind((host, port))
@@ -56,6 +57,10 @@ try:
                         "{} is not a recognised colour name".format(colour))  # todo ", try using hex codes instead"
             else:
                 player.tell("You must enter a colour to use that command!")
+
+        elif type == "colours":
+            colour_string = ",".join(accepted_colours)
+            player.tell("Colours: {}".format(colour_string))
 
         elif type == "hand":
             player.tell("/colour red This command is not ready yet")

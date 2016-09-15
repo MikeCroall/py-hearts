@@ -4,7 +4,8 @@ from tkinter import messagebox
 import threading
 
 ready = False
-accepted_colours = ["black", "red", "green", "blue", "cyan", "yellow", "magenta", "orange"]
+accepted_colours = ['aquamarine', 'azure', 'blue', 'coral', 'cyan', 'gold', 'goldenrod', 'khaki', 'lavender', 'maroon',
+                    'navy', 'orange', 'pink', 'purple', 'red', 'salmon', 'thistle', 'tomato', 'turquoise', 'yellow']
 receive_buffer = b""
 buffer_lock = threading.Lock()
 
@@ -64,6 +65,7 @@ def handle_command_to_send(text):
         close_thread = threading.Thread(target=close_countdown, args=())
         close_thread.setDaemon(True)
         close_thread.start()
+
     else:
         send(text)
 
@@ -214,7 +216,7 @@ def get_next_message():
             time.sleep(0.1)
             with buffer_lock:
                 decoded = receive_buffer.decode("utf-8")
-            # no full transmission yet, loop to check again
+                # no full transmission yet, loop to check again
         # now something new to check
         if end_of_transmission in decoded:  # double check to avoid failures
             first_cut_off = decoded.index(end_of_transmission)
