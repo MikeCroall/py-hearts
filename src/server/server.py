@@ -51,13 +51,14 @@ try:
                     print("{} set their colour to {}".format(player.name, player.colour))
                     player.tell("You have set your colour to {}".format(colour), c=colour)
                     broadcast_except_player("{} set their colour to {}".format(player.name, player.colour), player)
-                elif colour[0] == "#":
+                elif "#" in colour:
                     print("{} wants to use hex code {} as their colour".format(player.name, colour))
                     player.tell("Sorry, hex codes are not supported!", c="red")
                     # todo support hex codes
                 else:
-                    player.tell(
-                        "{} is not a recognised colour name".format(colour), c="red")  # todo ", try using hex codes instead"
+                    print("{} wants unsupported colour {}".format(player.name, colour))
+                    player.tell("{} is not a recognised colour name".format(colour), c="red")
+                    # todo ", try using hex codes instead"
             else:
                 player.tell("You must enter a colour to use that command!")
 
