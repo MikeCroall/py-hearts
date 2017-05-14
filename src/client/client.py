@@ -160,7 +160,7 @@ if not username or len(username) > 16:
 server = input("Server IP: ").strip()  # for testing on localhost use 127.0.0.1
 if not server:
     server = "127.0.0.1"
-    add_to_chat_log("No server entered, defaulting to 127.0.0.1", c="orange")
+    add_to_chat_log("No server entered, defaulting to 127.0.0.1 (localhost)", c="orange")
 
 port = 3033
 
